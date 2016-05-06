@@ -66,7 +66,7 @@ This will destroy the container object named ``\texttt{p1}" and future reference
 
 \texttt{lxc-execute}
 
-\texttt{lxc-freeze}
+\texttt{lxc-freeze, lxc-unfreeze}
 
 \texttt{lxc-info}
 
@@ -78,12 +78,23 @@ This will destroy the container object named ``\texttt{p1}" and future reference
 
 \texttt{lxc-snapshot}
 
-\texttt{lxc-start}
+\texttt{lxc-start, lxc-stop}
+\begin{dent}
+This command is used to start a container, taking the container name as the parameter and an optional parameter ``\texttt{-d}" to run in background if set. For example to start a container named ``\texttt{p1}", we execute the following command
 
+\texttt{ \$ lxc-start -n p1 -d}
 
+This will start the container named ``\texttt{p1}" in the background, which will be detached from the shell.
+\end{dent}
 
 \texttt{lxc-stop}
+\begin{dent}
+This command is used to stop processes within a container, taking the container name as the parameter. For example to kill all processes in a container named ``\texttt{p1}", we execute the following command
 
+\texttt{ \$ lxc-stop -n p1}
+
+This will kill all processes within the container named ``\texttt{p1}".
+\end{dent}
 \texttt{lxc-top}
 
 \texttt{lxc-unfreeze}
