@@ -1,6 +1,7 @@
 \documentclass[12pt]{article}
 
 \usepackage{geometry}
+\usepackage{changepage}
 
 \geometry{letterpaper, left=1in, right=1in, top=1in, bottom=1in}
 \setlength{\parskip}{1em}
@@ -11,6 +12,93 @@
 \author{Qingwei Lan (404458762)\\ \textit{University of California, Los Angeles}}
 \maketitle
 
-\section{Introduction}
+\newenvironment{dent}{\begin{adjustwidth}{0.35in}{}}{\end{adjustwidth}}
+
+
+
+\section{Introduction to Linux Containers}
+
+Linux Containers is an implementation for the ``containers" concept. Traditionally virtualization starts with the physical hardware at the bottom, then comes the kernel and operating system, and above that is the hypervisor. Atop the hypervisor are the virtual machine images that allow the user to run many different systems. A container is similar to the traditional virtualization method except that it doesn't have the hypervisor layer.
+
+A major advantage of containers over traditional virtual machines is speed since containers do not run an individual operating system but shares the same host operating system. This allows it to make efficient use of system calls and hardware resources without going through the hypervisor layer.
+
+Linux Containers provides a virtual envoronment complete with its own CPU, memory, and I/O, which is made possible by cgroups and namespaces in the Linux kernel.
+
+
+
+\section{Currently Available Commands}
+
+In this section I will introduce some of the commonly used commands in the current stable 2.0 version of LXC. These command binaries can be found in the \texttt{src/lxc} directory after compilation through the command ``\texttt{./autogen.sh \&\& ./configure \&\& make}".
+
+{\parindent0pt % disables indentation for all text between { and }
+
+\texttt{lxc-attach}
+
+\texttt{lxc-cgroup}
+
+\texttt{lxc-checkpoint}
+
+\texttt{lxc-config}
+
+\texttt{lxc-console}
+
+\texttt{lxc-copy}
+
+\texttt{lxc-create}
+\begin{dent}
+This command creates a container, taking the container name as the parameter. For example to create a container named ``\texttt{p1}", we execute the following command
+
+\texttt{ \$ lxc-create -n p1}
+
+This will create a container named ``\texttt{p1}" and future references to it will use the same name.
+\end{dent}
+
+\texttt{lxc-destroy}
+\begin{dent}
+This command destroys a container, taking the container name as the parameter. For example to destroy a container named ``\texttt{p1}", we execute the following command
+
+\texttt{ \$ lxc-destroy -n p1}
+
+This will destroy the container object named ``\texttt{p1}" and future references to it will be invalid.
+\end{dent}
+
+\texttt{lxc-device}
+
+\texttt{lxc-execute}
+
+\texttt{lxc-freeze}
+
+\texttt{lxc-info}
+
+\texttt{lxc-ls}
+
+\texttt{lxc-monitor}
+
+\texttt{lxc-monitord}
+
+\texttt{lxc-snapshot}
+
+\texttt{lxc-start}
+
+
+
+\texttt{lxc-stop}
+
+\texttt{lxc-top}
+
+\texttt{lxc-unfreeze}
+
+\texttt{lxc-unshare}
+
+\texttt{lxc-user-nic}
+
+\texttt{lxc-usernsexec}
+
+\texttt{lxc-wait}
+
+} % restore indentation
+
+
+\section{New Feature}
 
 \end{document}
