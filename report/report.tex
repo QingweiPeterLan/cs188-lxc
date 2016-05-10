@@ -115,6 +115,24 @@ This command creates a copy of existing containers and optionally starts the cop
 } % restore indentation
 
 
-\section{New Feature}
+\section{New Directory Methods}
+
+For the first part of my project I will be adding some direcory methods to the outer layer of the container. The methods will be \texttt{lxc-pd} (print directories in a container) and \texttt{lxc-search} (search for a file in container)
+
+\subsection{\texttt{lxc-pd} (print-directory)}
+
+This command will be used to print directories in a container specified by the \texttt{--name} or \texttt{-n} option. It will print recursively for \texttt{N} levels (default is 1) starting from the root directory. The number of levels can be specified with the option \texttt{--level} or \texttt{-l} followed by the number of levels. An example usage will be
+
+\texttt{\$ lxc-pd --name p1 --level 5}
+
+\noindent This will print directories in container \texttt{p1} for up to 5 levels of recursion.
+
+\subsection{\texttt{lxc-search} (search)}
+
+This command will search for a file in a container specified by the  specified by the \texttt{--name} or \texttt{-n} option. The file is specified by the option \texttt{--file} or \texttt{-f} followed by the file name. An example usage will be
+
+\texttt{\$ lxc-search --name p1 --file file-name}
+
+\noindent This will search for a file named \texttt{file-name} inside the container named \texttt{p1}
 
 \end{document}
