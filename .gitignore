@@ -53,6 +53,8 @@ src/lxc/lxc-init
 src/lxc/lxc-ls
 src/lxc/lxc-monitor
 src/lxc/lxc-monitord
+src/lxc/lxc-pd
+src/lxc/lxc-search
 src/lxc/lxc-shutdown
 src/lxc/lxc-snapshot
 src/lxc/lxc-start
