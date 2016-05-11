@@ -22,9 +22,95 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
+
+#include <lxc/lxccontainer.h>
+
+#include "conf.h"
+#include "arguments.h"
+
+static bool ips;
+static bool state;
+static bool pid;
+static bool stats;
+static bool humanize = true;
+static char **key = NULL;
+static int keys = 0;
+static int filter_count = 0;
+
+static int my_parser(struct lxc_arguments* args, int c, char* arg)
+{
+	char **newk;
+	switch (c) {
+	case 'c':
+		newk = realloc(key, (keys + 1) * sizeof(key[0]));
+		if (!newk)
+			return -1;
+		key = newk;
+		key[keys] = arg;
+		keys++;
+		break;
+	case 'i': ips = true; filter_count += 1; break;
+	case 's': state = true; filter_count += 1; break;
+	case 'p': pid = true; filter_count += 1; break;
+	case 'S': stats = true; filter_count += 5; break;
+	case 'H': humanize = false; break;
+	}
+	return 0;
+}
+
+static const struct option my_longopts[] = {
+	{"config", required_argument, 0, 'c'},
+	{"ips", no_argument, 0, 'i'},
+	{"state", no_argument, 0, 's'},
+	{"pid", no_argument, 0, 'p'},
+	{"stats", no_argument, 0, 'S'},
+	{"no-humanize", no_argument, 0, 'H'},
+	LXC_COMMON_OPTIONS,
+};
+
+static struct lxc_arguments my_args = {
+	.progname = "lxc-pd",
+	.help     = "\
+--name=NAME\n\
+\n\
+lxc-pd prints directories of a container with the identifier NAME\n\
+\n\
+Options :\n\
+  -n, --name=NAME       NAME of the container\n\
+  -c, --config=KEY      show configuration variable KEY from running container\n\
+  -i, --ips             shows the IP addresses\n\
+  -p, --pid             shows the process id of the init container\n\
+  -S, --stats           shows usage stats\n\
+  -H, --no-humanize     shows stats as raw numbers, not humanized\n\
+  -s, --state           shows the state of the container\n",
+	.name     = NULL,
+	.options  = my_longopts,
+	.parser   = my_parser,
+	.checker  = NULL,
+};
 
 int main(int argc, char *argv[])
 {
 	printf("Within lxc-pd\n");
+
+	int ret = EXIT_FAILURE;
+
+	if (lxc_arguments_parse(&my_args, argc, argv))
+		return ret;
+
+	if (!my_args.log_file)
+		my_args.log_file = "none";
+
+	const char *name = my_args.name;
+	const char *lxcpath = my_args.lxcpath[0];
+
+	printf("Container name: %s\n", name);
+
+	struct lxc_container *c;
+
+	c = lxc_container_new(name, lxcpath);
+	printf("rootfs: %s\n", c->lxc_conf->rootfs.path);
+
 	return 0;
 }
