@@ -115,9 +115,11 @@ This command creates a copy of existing containers and optionally starts the cop
 } % restore indentation
 
 
-\section{New Directory Methods}
+\section{New LXC Commands}
 
-For the first part of my project I will be adding some direcory methods to the outer layer of the container. The methods will be \texttt{lxc-pd} (print directories in a container) and \texttt{lxc-search} (search for a file in container)
+For my project I will be adding a direcory method to the outer layer of the container. The method will be \texttt{lxc-pd} (print directories in a container).
+
+Then I will build an export system \texttt{lxc-export} where users can export a certain snapshot of a container so that it can be used as a base for future containers.
 
 \subsection{\texttt{lxc-pd} (print-directory)}
 
@@ -127,12 +129,20 @@ This command will be used to print directories in a container specified by the \
 
 \noindent This will print directories in container \texttt{p1} for up to 5 levels of recursion.
 
-\subsection{\texttt{lxc-search} (search)}
+\subsection{\texttt{lxc-export} (export-container)}
 
-This command will search for a file in a container specified by the  specified by the \texttt{--name} or \texttt{-n} option. The file is specified by the option \texttt{--file} or \texttt{-f} followed by the file name. An example usage will be
+This command will export a certain container or a container snapshot as a ``base container" that can be used for future containers. In other words, the container in question can be used as the base for another container. We specify the container name with the \texttt{--name} or \texttt{-n} option, the snapshot name with the \texttt{--snapshot} or \texttt{-s} option, and the output name with the \texttt{--export} or \texttt{-e} option.
 
-\texttt{\$ lxc-search --name p1 --file file-name}
+\noindent To export the current state of a container named \texttt{p1} to output named \texttt{base0}, we use the following command
 
-\noindent This will search for a file named \texttt{file-name} inside the container named \texttt{p1}
+\texttt{\$ lxc-export --name p1 --export base0}
+
+\noindent To export the snapshot named \texttt{snap0} of container named \texttt{p1} to output named \texttt{base0}, we use the following command
+
+\texttt{\$ lxc-export --name --snapshot snap0 --export base0}
+
+\noindent Now that we have exported a container, we can create new containers from this container using the original \texttt{lxc-create} command with the \texttt{--base} or \texttt{-b} option. To create a container named \texttt{p2} with the exported base container \texttt{base0}, we use the following command
+
+\texttt{\$ lxc-create --name p2 --base base0}
 
 \end{document}
