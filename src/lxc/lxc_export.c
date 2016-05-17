@@ -25,6 +25,6 @@
 
 int main(int argc, char *argv[])
 {
-	printf("Within lxc-search\n");
+	printf("Within lxc-export\n");
 	return 0;
 }
