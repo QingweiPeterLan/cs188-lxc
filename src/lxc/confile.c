@@ -521,6 +521,7 @@ extern int lxc_list_nicconfigs(struct lxc_conf *c, const char *key,
 	else
 		memset(retv, 0, inlen);
 
+	strprint(retv, inlen, "type\n");
 	strprint(retv, inlen, "script.up\n");
 	strprint(retv, inlen, "script.down\n");
 	if (netdev->type != LXC_NET_EMPTY) {
@@ -1962,6 +1963,14 @@ static int parse_line(char *buffer, void *data)
 
 	value += lxc_char_left_gc(value, strlen(value));
 	value[lxc_char_right_gc(value, strlen(value))] = '\0';
+
+	if (*value == '\'' || *value == '\"') {
+		size_t len = strlen(value);
+		if (len > 1 && value[len-1] == *value) {
+			value[len-1] = '\0';
+			value++;
+		}
+	}
 
 	config = lxc_getconfig(key);
 	if (!config) {
