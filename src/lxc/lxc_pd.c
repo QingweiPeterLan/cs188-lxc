@@ -112,16 +112,19 @@ int main(int argc, char *argv[])
 
 	struct lxc_container *c;
 	c = lxc_container_new(name, lxcpath);
-	if (!c)
+	if (!c) {
+		printf("Error: cannot create internal lxc container\n");
 		goto out;
-
-	if (c->lxc_conf) {
-		char *rootpath = c->lxc_conf->rootfs.path;
-		print_dir(rootpath, 0);
-		ret = EXIT_SUCCESS;
-	} else {
-		printf("Error: Cannot read of container `%s', permission denied\n", name);
 	}
+
+	if (!c->is_defined(c)) {
+		printf("Error: cannot find container `%s', does not exist or permission denied\n", name);
+		goto out;
+	}
+
+	char *rootpath = c->lxc_conf->rootfs.path;
+	print_dir(rootpath, 0);
+	ret = EXIT_SUCCESS;
 
 out:
 	return ret;

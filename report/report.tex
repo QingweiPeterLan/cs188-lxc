@@ -139,7 +139,7 @@ This command will export a certain container or a container snapshot as a ``base
 
 \noindent To export the snapshot named \texttt{snap0} of container named \texttt{p1} to output named \texttt{base0}, we use the following command
 
-\texttt{\$ lxc-export --name --snapshot snap0 --export base0}
+\texttt{\$ lxc-export --name p1 --snapshot snap0 --export base0}
 
 \noindent Now that we have exported a container, we can create new containers from this container using the original \texttt{lxc-create} command with the \texttt{--base} or \texttt{-b} option. To create a container named \texttt{p2} with the exported base container \texttt{base0}, we use the following command
 
