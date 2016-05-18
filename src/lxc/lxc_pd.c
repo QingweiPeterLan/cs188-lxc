@@ -99,12 +99,10 @@ void print_dir(const char *name, int level)
 
 int main(int argc, char *argv[])
 {
-	// printf("Within lxc-pd\n");
-
 	int ret = EXIT_FAILURE;
 
 	if (lxc_arguments_parse(&my_args, argc, argv))
-		return ret;
+		goto out;
 
 	if (!my_args.log_file)
 		my_args.log_file = "none";
@@ -112,17 +110,19 @@ int main(int argc, char *argv[])
 	const char *name = my_args.name;
 	const char *lxcpath = my_args.lxcpath[0];
 
-	// printf("Container name: %s\n", name);
-
 	struct lxc_container *c;
-
 	c = lxc_container_new(name, lxcpath);
-	char *rootpath = c->lxc_conf->rootfs.path;
-	// printf("rootfs: %s\n", rootpath);
+	if (!c)
+		goto out;
 
-	print_dir(rootpath, 0);
+	if (c->lxc_conf) {
+		char *rootpath = c->lxc_conf->rootfs.path;
+		print_dir(rootpath, 0);
+		ret = EXIT_SUCCESS;
+	} else {
+		printf("Error: Cannot read of container `%s', permission denied\n", name);
+	}
 
-	// printf("ONLY DIR: %d, DIR LEVEL: %d\n", dir_only, dir_level);
-
-	return 0;
+out:
+	return ret;
 }
