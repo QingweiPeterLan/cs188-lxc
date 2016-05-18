@@ -46,6 +46,7 @@ src/lxc/lxc-create
 src/lxc/lxc-destroy
 src/lxc/lxc-device
 src/lxc/lxc-execute
+src/lxc/lxc-export
 src/lxc/lxc-freeze
 src/lxc/lxc.functions
 src/lxc/lxc-info
@@ -54,7 +55,6 @@ src/lxc/lxc-ls
 src/lxc/lxc-monitor
 src/lxc/lxc-monitord
 src/lxc/lxc-pd
-src/lxc/lxc-search
 src/lxc/lxc-shutdown
 src/lxc/lxc-snapshot
 src/lxc/lxc-start
