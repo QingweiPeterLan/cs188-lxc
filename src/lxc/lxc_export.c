@@ -32,14 +32,14 @@
 
 static char *lxc_export_path = "/var/lib/lxcexport/";
 
-static char *export_name = NULL;
-static char *snapshot_name = NULL;
-
 static int my_parser(struct lxc_arguments* args, int c, char* arg)
 {
 	switch (c) {
-	case 'e': export_name = arg; break;
-	case 's': snapshot_name = arg; break;
+	case 'e': args->exportname = arg; break;
+	case 's':
+		args->etype = SNAPSHOT;
+		args->snapshotname = arg;
+		break;
 	}
 	return 0;
 }
@@ -71,13 +71,14 @@ int main(int argc, char *argv[])
 {
 	int ret = EXIT_FAILURE;
 
+	my_args.etype = CONTAINER;
 	if (lxc_arguments_parse(&my_args, argc, argv))
 		goto out;
 
 	if (!my_args.log_file)
 		my_args.log_file = "none";
 
-	if (!export_name) {
+	if (!my_args.exportname) {
 		printf("%s: missing output name, use --export option\n", my_args.progname);
 		goto out;
 	}
@@ -85,19 +86,20 @@ int main(int argc, char *argv[])
 	const char *name = my_args.name;
 	const char *lxcpath = my_args.lxcpath[0];
 
+	// check if container is defined
 	struct lxc_container *c;
 	c = lxc_container_new(name, lxcpath);
 	if (!c) {
 		printf("Error: cannot create internal lxc container\n");
 		goto out;
 	}
-
 	if (!c->is_defined(c)) {
 		printf("Error: cannot find container `%s', does not exist or permission denied\n", name);
 		goto out;
 	}
 
-	if (snapshot_name) {
+	// check if snapshot exists
+	if (my_args.snapshotname) {
 		struct lxc_snapshot *s;
 		int i, n;
 		n = c->snapshot_list(c, &s);
@@ -112,18 +114,19 @@ int main(int argc, char *argv[])
 
 		int exists = 0;
 		for (i = 0; i < n; ++i) {
-			if (!strcmp(snapshot_name, s[i].name)) {
+			if (!strcmp(my_args.snapshotname, s[i].name)) {
 				printf("%s (%s) %s\n", s[i].name, s[i].lxcpath, s[i].timestamp);
 				exists = 1;
 			}
 			s[i].free(&s[i]);
 		}
 		if (!exists) {
-			printf("Snapshot `%s' for container %s does not exist\n", snapshot_name, name);
+			printf("Snapshot `%s' for container %s does not exist\n", my_args.snapshotname, name);
 			goto out;
 		}
 	}
 
+	// create directory for storing exports
 	int mret = mkdir(lxc_export_path, 0700);
 	if (mret) {
 		if (errno == EACCES) {
@@ -136,13 +139,25 @@ int main(int argc, char *argv[])
 	} else {
 		printf("Successfully created directory %s\n", lxc_export_path);
 	}
+
+
+	// execute task
+	switch (my_args.etype) {
+		case CONTAINER:
+			printf("TYPE: CONTAINER\n");
+			break;
+		case SNAPSHOT:
+			printf("TYPE: SNAPSHOT\n");
+			break;
+		default: goto out;
+	}
 	
 
 	// temporary, remove later
-	if (snapshot_name)
-		printf("name: %s, snapshot: %s, export name: %s\n", my_args.name, snapshot_name, export_name);
+	if (my_args.snapshotname)
+		printf("name: %s, snapshot: %s, export name: %s\n", my_args.name, my_args.snapshotname, my_args.exportname);
 	else
-		printf("name: %s, export name: %s\n", my_args.name, export_name);
+		printf("name: %s, export name: %s\n", my_args.name, my_args.exportname);
 
 out:
 	return ret;

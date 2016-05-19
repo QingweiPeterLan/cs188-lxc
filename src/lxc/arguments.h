@@ -120,6 +120,14 @@ struct lxc_arguments {
 	int keepname;
 	int keepmac;
 
+	/* lxc-export */
+	enum etype {
+		CONTAINER,
+		SNAPSHOT,
+	} etype;
+	char *exportname;
+	char *snapshotname;
+
 	/* lxc-ls */
 	char *ls_fancy_format;
 	char *ls_filter;
