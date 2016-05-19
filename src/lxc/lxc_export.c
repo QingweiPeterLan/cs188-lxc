@@ -23,10 +23,14 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <sys/stat.h>
+#include <errno.h>
 
 #include <lxc/lxccontainer.h>
 
 #include "arguments.h"
+
+static char *lxc_export_path = "/var/lib/lxcexport/";
 
 static char *export_name = NULL;
 static char *snapshot_name = NULL;
@@ -118,6 +122,19 @@ int main(int argc, char *argv[])
 			printf("Snapshot `%s' for container %s does not exist\n", snapshot_name, name);
 			goto out;
 		}
+	}
+
+	int mret = mkdir(lxc_export_path, 0700);
+	if (mret) {
+		if (errno == EACCES) {
+			printf("Permission denied, please run as root\n");
+			goto out;
+		} else if (errno != EEXIST) {
+			printf("Error in creating directory %s, %d\n", lxc_export_path, mret);
+			goto out;
+		}
+	} else {
+		printf("Successfully created directory %s\n", lxc_export_path);
 	}
 	
 
