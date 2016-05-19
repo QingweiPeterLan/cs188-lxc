@@ -123,7 +123,8 @@ int main(int argc, char *argv[])
 	}
 
 	char *rootpath = c->lxc_conf->rootfs.path;
-	print_dir(rootpath, 0);
+	printf("%s\n", rootpath);
+	print_dir(rootpath, 1);
 	ret = EXIT_SUCCESS;
 
 out:
