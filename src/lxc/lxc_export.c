@@ -76,14 +76,14 @@ int main(int argc, char *argv[])
 
 	my_args.etype = CONTAINER;
 	if (lxc_arguments_parse(&my_args, argc, argv))
-		goto out;
+		exit(ret);
 
 	if (!my_args.log_file)
 		my_args.log_file = "none";
 
 	if (!my_args.exportname) {
 		printf("%s: missing output name, use --export option\n", my_args.progname);
-		goto out;
+		exit(ret);
 	}
 
 	const char *name = my_args.name;
@@ -173,6 +173,7 @@ int main(int argc, char *argv[])
 		printf("name: %s, export name: %s\n", my_args.name, my_args.exportname);
 
 out:
+	lxc_container_put(c);
 	return ret;
 }
 
