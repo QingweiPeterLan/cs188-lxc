@@ -67,6 +67,9 @@ Options :\n\
 	.checker  = NULL,
 };
 
+static int do_export_container(struct lxc_container *c, const char *detailsfile);
+static int do_export_snapshot(struct lxc_container *c, const char *snapshotname, const char *detailsfile);
+
 int main(int argc, char *argv[])
 {
 	int ret = EXIT_FAILURE;
@@ -132,9 +135,6 @@ int main(int argc, char *argv[])
 		if (errno == EACCES) {
 			printf("Permission denied, please run as root\n");
 			goto out;
-		} else if (errno != EEXIST) {
-			printf("Error in creating directory %s, %d\n", lxc_export_path, mret);
-			goto out;
 		}
 	} else {
 		printf("Successfully created directory %s\n", lxc_export_path);
@@ -142,15 +142,28 @@ int main(int argc, char *argv[])
 
 
 	// execute task
+	int eret = 0;
 	switch (my_args.etype) {
 		case CONTAINER:
 			printf("TYPE: CONTAINER\n");
+			printf("%d\n", eret);
+			eret = do_export_container(c, "");
+			printf("%d\n", eret);
 			break;
 		case SNAPSHOT:
 			printf("TYPE: SNAPSHOT\n");
+			printf("%d\n", eret);
+			eret = do_export_snapshot(c, "", "");
+			printf("%d\n", eret);
 			break;
 		default: goto out;
 	}
+
+	if (c)
+		printf("c exists\n");
+
+	if (eret)
+		printf("Error in executing task, %d\n", eret);
 	
 
 	// temporary, remove later
@@ -160,5 +173,23 @@ int main(int argc, char *argv[])
 		printf("name: %s, export name: %s\n", my_args.name, my_args.exportname);
 
 out:
+	return ret;
+}
+
+static int do_export_container(struct lxc_container *c, const char *detailsfile)
+{
+	int ret;
+	ret = c->export_container(c, detailsfile);
+	// ret = c->is_defined(c);
+	printf("RET %d\n", ret);
+	return ret;
+}
+
+static int do_export_snapshot(struct lxc_container *c, const char *snapshotname, const char *detailsfile)
+{
+	int ret;
+	ret = c->export_snapshot(c, snapshotname, detailsfile);
+	// ret = c->is_defined(c);
+	printf("RET %d\n", ret);
 	return ret;
 }

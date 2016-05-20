@@ -712,6 +712,18 @@ struct lxc_container {
 	bool (*snapshot_destroy)(struct lxc_container *c, const char *snapname);
 
 	/*!
+	 *
+	 */
+	int (*export_container)(struct lxc_container *c, const char *detailsfile);
+
+	/*!
+	 *
+	 */
+	int (*export_snapshot)(struct lxc_container *c, const char *snapshotname, const char *detailsfile);
+
+	int (*test)(struct lxc_container *c);
+
+	/*!
 	 * \brief Determine if the caller may control the container.
 	 *
 	 * \param c Container.
