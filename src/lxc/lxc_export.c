@@ -190,7 +190,8 @@ static int do_export_snapshot(struct lxc_container *c, const char *snapshotname,
 {
 	int r = 0;
 	printf("RET %d\n", r);
-	r = c->export_snapshot(c, snapshotname, detailsfile);
+	// r = c->export_snapshot(c, snapshotname, detailsfile);
+	r = c->is_defined(c);
 	printf("RET %d\n", r);
 	return r;
 }

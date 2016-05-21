@@ -321,7 +321,7 @@ int lxc_container_put(struct lxc_container *c)
 
 static bool do_lxcapi_is_defined(struct lxc_container *c)
 {
-	printf("CHECK LXX-IS-DEFINED\n");
+	ERROR("CHECK LXX-IS-DEFINED");
 	struct stat statbuf;
 	bool ret = false;
 	int statret;
@@ -3725,8 +3725,8 @@ WRAP_API(bool, lxcapi_snapshot_destroy_all)
 
 static bool do_lxcapi_export_container(struct lxc_container *c, const char *detailsfile)
 {
-	if (!c || !c->name || !c->config_path)
-		return false;
+	// if (!c || !c->name || !c->config_path)
+	// 	return false;
 
 	printf("EXPORT CONTAINER\n");
 	return true;
@@ -3739,8 +3739,8 @@ WRAP_API_1(bool, lxcapi_export_container, const char *)
 
 static bool do_lxcapi_export_snapshot(struct lxc_container *c, const char *snapshotname, const char *detailsfile)
 {
-	if (!c || !c->name || !c->config_path)
-		return false;
+	// if (!c || !c->name || !c->config_path)
+	// 	return false;
 
 	printf("EXPORT SNAPSHOT\n");
 	return true;
