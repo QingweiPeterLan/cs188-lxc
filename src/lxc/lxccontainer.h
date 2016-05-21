@@ -714,7 +714,7 @@ struct lxc_container {
 	/*!
 	 *
 	 */
-	int (*export_container)(struct lxc_container *c, const char *detailsfile);
+	int (*export_container)(struct lxc_container *c, const char *outputname, const char *detailsfile);
 
 	/*!
 	 *

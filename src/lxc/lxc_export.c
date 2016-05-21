@@ -27,6 +27,7 @@
 
 #include <lxc/lxccontainer.h>
 
+#include "log.h"
 #include "arguments.h"
 #include "utils.h"
 
@@ -80,6 +81,11 @@ int main(int argc, char *argv[])
 
 	if (!my_args.log_file)
 		my_args.log_file = "none";
+
+	if (lxc_log_init(NULL, my_args.log_file, my_args.log_priority,
+			 my_args.progname, my_args.quiet, my_args.lxcpath[0]))
+		exit(EXIT_FAILURE);
+	lxc_log_options_no_override();
 
 	if (!my_args.exportname) {
 		printf("%s: missing output name, use --export option\n", my_args.progname);
@@ -177,7 +183,7 @@ static int do_export_container(struct lxc_container *c, const char *detailsfile)
 {
 	int r = 0;
 	printf("[00] RET %d\n", r);
-	r = c->export_container(c, detailsfile);
+	r = c->export_container(c, my_args.exportname, detailsfile);
 	printf("[01] RET %d\n", r);
 	if (r == 15)
 		printf("[02] EXPORT CONTAINER NOT YET IMPLEMENTED\n");

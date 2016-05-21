@@ -3720,13 +3720,96 @@ WRAP_API(bool, lxcapi_snapshot_destroy_all)
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 
-static int do_lxcapi_export_container(struct lxc_container *c, const char *detailsfile)
+static int do_lxcapi_export_container(struct lxc_container *c, const char *outputname, const char *detailsfile)
 {
-	INFO("EXPORT CONTAINER\n");
-	return 15;
+	INFO("EXPORT CONTAINER [%s]", outputname);
+
+	char newpath[MAXPATHLEN];
+	char *origroot = NULL, *saved_unexp_conf = NULL;
+	int ret = 0;
+	size_t saved_unexp_len;
+	FILE *fout;
+
+	if (!c || !do_lxcapi_is_defined(c))
+		return 1;
+	if (container_mem_lock(c))
+		return 1;
+	if (!is_stopped(c)) {
+		ERROR("error: Original container (%s) is running", c->name);
+		goto failure;
+	}
+
+	ret = snprintf(newpath, MAXPATHLEN, "/var/lib/lxcexport/%s/config", outputname);
+	if (ret < 0 || ret >= MAXPATHLEN) {
+		SYSERROR("export: failed making config pathname");
+		goto failure;
+	}
+	if (file_exists(newpath)) {
+		ERROR("error: export: %s exists", newpath);
+		goto failure;
+	}
+
+	ret = create_file_dirname(newpath, c->lxc_conf);
+	if (ret < 0 && errno != EEXIST) {
+		ERROR("Error creating container dir for %s", newpath);
+		goto failure;
+	}
+
+	if (c->lxc_conf->rootfs.path) {
+		origroot = c->lxc_conf->rootfs.path;
+		INFO("Original root: %s", origroot);
+		c->lxc_conf->rootfs.path = NULL;
+	}
+	fout = fopen(newpath, "w");
+	if (!fout) {
+		SYSERROR("error opening %s", newpath);
+		goto failure;
+	}
+
+	saved_unexp_conf = c->lxc_conf->unexpanded_config;
+	saved_unexp_len = c->lxc_conf->unexpanded_len;
+	c->lxc_conf->unexpanded_config = strdup(saved_unexp_conf);
+	if (!c->lxc_conf->unexpanded_config) {
+		ERROR("Out of memory");
+		fclose(fout);
+		goto failure;
+	}
+	clear_unexp_config_line(c->lxc_conf, "lxc.rootfs", false);
+	write_config(fout, c->lxc_conf);
+	fclose(fout);
+	c->lxc_conf->rootfs.path = origroot;
+	free(c->lxc_conf->unexpanded_config);
+	c->lxc_conf->unexpanded_config = saved_unexp_conf;
+	saved_unexp_conf = NULL;
+	c->lxc_conf->unexpanded_len = saved_unexp_len;
+
+	sprintf(newpath, "/var/lib/lxcexport/%s/rootfs", outputname);
+	if (mkdir(newpath, 0755) < 0) {
+		SYSERROR("error creating %s", newpath);
+		goto failure;
+	}
+
+	if (am_unpriv()) {
+		if (chown_mapped_root(newpath, c->lxc_conf) < 0) {
+			ERROR("Error chowning %s to container root", newpath);
+			goto failure;
+		}
+	}
+
+
+	goto success;
+
+success:
+	container_mem_unlock(c);
+	return 0;
+
+failure:
+	container_mem_unlock(c);
+
+	return 1;
 }
 
-WRAP_API_1(int, lxcapi_export_container, const char *)
+WRAP_API_2(int, lxcapi_export_container, const char *, const char *)
 
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
