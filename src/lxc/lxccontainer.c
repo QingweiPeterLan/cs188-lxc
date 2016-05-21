@@ -3733,8 +3733,8 @@ WRAP_API_1(int, lxcapi_export_container, const char *)
 
 static int do_lxcapi_export_snapshot(struct lxc_container *c, const char *snapshotname, const char *detailsfile)
 {
-	INFO("EXPORT SNAPSHOT\n");
-	return 6;
+	INFO("EXPORT SNAPSHOT, NOT YET IMPLEMENTED\n");
+	return 15;
 }
 
 WRAP_API_2(int, lxcapi_export_snapshot, const char *, const char *)
