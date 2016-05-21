@@ -714,12 +714,12 @@ struct lxc_container {
 	/*!
 	 *
 	 */
-	int (*export_container)(struct lxc_container *c, const char *detailsfile);
+	bool (*export_container)(struct lxc_container *c, const char *detailsfile);
 
 	/*!
 	 *
 	 */
-	int (*export_snapshot)(struct lxc_container *c, const char *snapshotname, const char *detailsfile);
+	bool (*export_snapshot)(struct lxc_container *c, const char *snapshotname, const char *detailsfile);
 
 	/*!
 	 * \brief Determine if the caller may control the container.

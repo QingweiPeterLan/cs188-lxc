@@ -100,8 +100,8 @@ static bool container_destroy(struct lxc_container *c);
 static bool get_snappath_dir(struct lxc_container *c, char *snappath);
 static bool lxcapi_snapshot_destroy_all(struct lxc_container *c);
 static bool do_lxcapi_save_config(struct lxc_container *c, const char *alt_file);
-static int lxcapi_export_container(struct lxc_container *c, const char *detailsfile);
-static int lxcapi_export_snapshot(struct lxc_container *c, const char *snapshotname, const char *detailsfile);
+// static int lxcapi_export_container(struct lxc_container *c, const char *detailsfile);
+// static int lxcapi_export_snapshot(struct lxc_container *c, const char *snapshotname, const char *detailsfile);
 
 static bool config_file_exists(const char *lxcpath, const char *cname)
 {
@@ -321,6 +321,7 @@ int lxc_container_put(struct lxc_container *c)
 
 static bool do_lxcapi_is_defined(struct lxc_container *c)
 {
+	printf("CHECK LXX-IS-DEFINED\n");
 	struct stat statbuf;
 	bool ret = false;
 	int statret;
@@ -3722,24 +3723,30 @@ WRAP_API(bool, lxcapi_snapshot_destroy_all)
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 
-static int do_lxcapi_export_container(struct lxc_container *c, const char *detailsfile)
+static bool do_lxcapi_export_container(struct lxc_container *c, const char *detailsfile)
 {
+	if (!c || !c->name || !c->config_path)
+		return false;
+
 	printf("EXPORT CONTAINER\n");
-	return 5;
+	return true;
 }
 
-WRAP_API_1(int, lxcapi_export_container, const char *)
+WRAP_API_1(bool, lxcapi_export_container, const char *)
 
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 
-static int do_lxcapi_export_snapshot(struct lxc_container *c, const char *snapshotname, const char *detailsfile)
+static bool do_lxcapi_export_snapshot(struct lxc_container *c, const char *snapshotname, const char *detailsfile)
 {
+	if (!c || !c->name || !c->config_path)
+		return false;
+
 	printf("EXPORT SNAPSHOT\n");
-	return 0;
+	return true;
 }
 
-WRAP_API_2(int, lxcapi_export_snapshot, const char *, const char *)
+WRAP_API_2(bool, lxcapi_export_snapshot, const char *, const char *)
 
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
