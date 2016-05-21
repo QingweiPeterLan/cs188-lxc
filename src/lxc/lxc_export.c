@@ -67,20 +67,23 @@ Options :\n\
 	.checker  = NULL,
 };
 
+static int do_export_container(struct lxc_container *c, const char *detailsfile);
+static int do_export_snapshot(struct lxc_container *c, const char *snapshotname, const char *detailsfile);
+
 int main(int argc, char *argv[])
 {
 	int ret = EXIT_FAILURE;
 
 	my_args.etype = CONTAINER;
 	if (lxc_arguments_parse(&my_args, argc, argv))
-		goto out;
+		exit(ret);
 
 	if (!my_args.log_file)
 		my_args.log_file = "none";
 
 	if (!my_args.exportname) {
 		printf("%s: missing output name, use --export option\n", my_args.progname);
-		goto out;
+		exit(ret);
 	}
 
 	const char *name = my_args.name;
@@ -127,13 +130,9 @@ int main(int argc, char *argv[])
 	}
 
 	// create directory for storing exports
-	int mret = mkdir_p(lxc_export_path, 0700);
-	if (mret) {
+	if (mkdir_p(lxc_export_path, 0700)) {
 		if (errno == EACCES) {
 			printf("Permission denied, please run as root\n");
-			goto out;
-		} else if (errno != EEXIST) {
-			printf("Error in creating directory %s, %d\n", lxc_export_path, mret);
 			goto out;
 		}
 	} else {
@@ -142,15 +141,25 @@ int main(int argc, char *argv[])
 
 
 	// execute task
+	int etret = 0;
 	switch (my_args.etype) {
 		case CONTAINER:
 			printf("TYPE: CONTAINER\n");
+			printf("%d\n", etret);
+			etret = do_export_container(c, "");
+			printf("%d\n", etret);
 			break;
 		case SNAPSHOT:
 			printf("TYPE: SNAPSHOT\n");
+			printf("%d\n", etret);
+			etret = do_export_snapshot(c, "", "");
+			printf("%d\n", etret);
 			break;
 		default: goto out;
 	}
+
+	if (etret)
+		printf("Error in executing task, %d\n", etret);
 	
 
 	// temporary, remove later
@@ -160,5 +169,24 @@ int main(int argc, char *argv[])
 		printf("name: %s, export name: %s\n", my_args.name, my_args.exportname);
 
 out:
+	lxc_container_put(c);
 	return ret;
+}
+
+static int do_export_container(struct lxc_container *c, const char *detailsfile)
+{
+	int r = 0;
+	printf("[0] RET %d\n", r);
+	r = c->export_container(c, detailsfile);
+	printf("[1] RET %d\n", r);
+	return r;
+}
+
+static int do_export_snapshot(struct lxc_container *c, const char *snapshotname, const char *detailsfile)
+{
+	int r = 0;
+	printf("[0] RET %d\n", r);
+	r = c->export_snapshot(c, snapshotname, detailsfile);
+	printf("[1] RET %d\n", r);
+	return r;
 }

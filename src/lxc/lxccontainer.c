@@ -3717,6 +3717,37 @@ static bool do_lxcapi_snapshot_destroy_all(struct lxc_container *c)
 
 WRAP_API(bool, lxcapi_snapshot_destroy_all)
 
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+
+static int do_lxcapi_export_container(struct lxc_container *c, const char *detailsfile)
+{
+	// if (!c || !c->name || !c->config_path)
+	// 	return false;
+
+	printf("EXPORT CONTAINER\n");
+	return 5;
+}
+
+WRAP_API_1(int, lxcapi_export_container, const char *)
+
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+
+static int do_lxcapi_export_snapshot(struct lxc_container *c, const char *snapshotname, const char *detailsfile)
+{
+	// if (!c || !c->name || !c->config_path)
+	// 	return false;
+
+	printf("EXPORT SNAPSHOT\n");
+	return 6;
+}
+
+WRAP_API_2(int, lxcapi_export_snapshot, const char *, const char *)
+
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+
 static bool do_lxcapi_may_control(struct lxc_container *c)
 {
 	return lxc_try_cmd(c->name, c->config_path) == 0;
@@ -4145,6 +4176,8 @@ struct lxc_container *lxc_container_new(const char *name, const char *configpath
 	c->snapshot_restore = lxcapi_snapshot_restore;
 	c->snapshot_destroy = lxcapi_snapshot_destroy;
 	c->snapshot_destroy_all = lxcapi_snapshot_destroy_all;
+	c->export_container = lxcapi_export_container;
+	c->export_snapshot = lxcapi_export_snapshot;
 	c->may_control = lxcapi_may_control;
 	c->add_device_node = lxcapi_add_device_node;
 	c->remove_device_node = lxcapi_remove_device_node;
