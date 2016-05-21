@@ -5,9 +5,22 @@
 ================================== DEBUGGING ==================================
 
   (1) I got a bug where I could not figure out why the function
-      'c->export_container' returned random numbers. I tried debuggin by
+      'c->export_container' returned random numbers. I tried debugging by
       adding new functions to the file 'lxccontainer.c' and changing the
       return types but they always gave random results.
+
+      First I suspected that it may have to do with the build system, since
+      the 'lxccontainer.c' was compiled into a shared library. To verify that
+      I did not need to mess around with Makefiles, I looked at the git
+      history of all changes made to files 'lxccontainer.h', 'lxccontainer.c',
+      and 'Makefile.am' with the commands
+
+        $ git log --follow -p src/lxc/lxccontainer.h
+        $ git log --follow -p src/lxc/lxccontainer.c
+        $ git log --follow -p src/lxc/Makefile.am
+
+      The history showed no major changes made to the build system so I was
+      realized that it had nothing to do with the build system.
 
       Then I figured that this might have something to do with the file system
       layout so I simply created a container environment for developing LXC.
