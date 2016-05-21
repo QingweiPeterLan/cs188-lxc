@@ -145,15 +145,15 @@ int main(int argc, char *argv[])
 	switch (my_args.etype) {
 		case CONTAINER:
 			printf("TYPE: CONTAINER\n");
-			printf("%d\n", etret);
+			printf("[20] %d\n", etret);
 			etret = do_export_container(c, "");
-			printf("%d\n", etret);
+			printf("[21] %d\n", etret);
 			break;
 		case SNAPSHOT:
 			printf("TYPE: SNAPSHOT\n");
-			printf("%d\n", etret);
+			printf("[30] %d\n", etret);
 			etret = do_export_snapshot(c, "", "");
-			printf("%d\n", etret);
+			printf("[31] %d\n", etret);
 			break;
 		default: goto out;
 	}
@@ -176,17 +176,17 @@ out:
 static int do_export_container(struct lxc_container *c, const char *detailsfile)
 {
 	int r = 0;
-	printf("[0] RET %d\n", r);
+	printf("[00] RET %d\n", r);
 	r = c->export_container(c, detailsfile);
-	printf("[1] RET %d\n", r);
+	printf("[01] RET %d\n", r);
 	return r;
 }
 
 static int do_export_snapshot(struct lxc_container *c, const char *snapshotname, const char *detailsfile)
 {
 	int r = 0;
-	printf("[0] RET %d\n", r);
+	printf("[10] RET %d\n", r);
 	r = c->export_snapshot(c, snapshotname, detailsfile);
-	printf("[1] RET %d\n", r);
+	printf("[11] RET %d\n", r);
 	return r;
 }

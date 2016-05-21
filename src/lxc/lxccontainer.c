@@ -3722,11 +3722,8 @@ WRAP_API(bool, lxcapi_snapshot_destroy_all)
 
 static int do_lxcapi_export_container(struct lxc_container *c, const char *detailsfile)
 {
-	// if (!c || !c->name || !c->config_path)
-	// 	return false;
-
-	printf("EXPORT CONTAINER\n");
-	return 5;
+	INFO("EXPORT CONTAINER\n");
+	return 15;
 }
 
 WRAP_API_1(int, lxcapi_export_container, const char *)
@@ -3736,10 +3733,7 @@ WRAP_API_1(int, lxcapi_export_container, const char *)
 
 static int do_lxcapi_export_snapshot(struct lxc_container *c, const char *snapshotname, const char *detailsfile)
 {
-	// if (!c || !c->name || !c->config_path)
-	// 	return false;
-
-	printf("EXPORT SNAPSHOT\n");
+	INFO("EXPORT SNAPSHOT\n");
 	return 6;
 }
 
