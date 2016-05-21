@@ -158,9 +158,6 @@ int main(int argc, char *argv[])
 		default: goto out;
 	}
 
-	if (c)
-		printf("c exists\n");
-
 	if (etret)
 		printf("Error in executing task, %d\n", etret);
 	
@@ -179,19 +176,17 @@ out:
 static int do_export_container(struct lxc_container *c, const char *detailsfile)
 {
 	int r = 0;
-	printf("RET %d\n", r);
-	// r = c->export_container(c, detailsfile);
-	r = c->is_defined(c);
-	printf("RET %d\n", r);
+	printf("[0] RET %d\n", r);
+	r = c->export_container(c, detailsfile);
+	printf("[1] RET %d\n", r);
 	return r;
 }
 
 static int do_export_snapshot(struct lxc_container *c, const char *snapshotname, const char *detailsfile)
 {
 	int r = 0;
-	printf("RET %d\n", r);
-	// r = c->export_snapshot(c, snapshotname, detailsfile);
-	r = c->is_defined(c);
-	printf("RET %d\n", r);
+	printf("[0] RET %d\n", r);
+	r = c->export_snapshot(c, snapshotname, detailsfile);
+	printf("[1] RET %d\n", r);
 	return r;
 }
