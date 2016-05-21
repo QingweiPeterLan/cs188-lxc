@@ -179,6 +179,8 @@ static int do_export_container(struct lxc_container *c, const char *detailsfile)
 	printf("[00] RET %d\n", r);
 	r = c->export_container(c, detailsfile);
 	printf("[01] RET %d\n", r);
+	if (r == 15)
+		printf("[02] EXPORT CONTAINER NOT YET IMPLEMENTED\n");
 	return r;
 }
 
@@ -188,5 +190,7 @@ static int do_export_snapshot(struct lxc_container *c, const char *snapshotname,
 	printf("[10] RET %d\n", r);
 	r = c->export_snapshot(c, snapshotname, detailsfile);
 	printf("[11] RET %d\n", r);
+	if (r == 15)
+		printf("[12] EXPORT SNAPSHOT NOT YET IMPLEMENTED\n");
 	return r;
 }
