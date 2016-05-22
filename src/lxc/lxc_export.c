@@ -109,9 +109,12 @@ int main(int argc, char *argv[])
 		printf("Successfully created directory %s\n", lxc_export_path);
 	}
 
+	printf("  * name: %s\n", c->name);
+	printf("  * config path: %s\n", c->config_path);
+	printf("  * config file: %s\n", c->configfile);
+
 	// execute task
 	int etret = 0;
-	printf("TYPE: CONTAINER\n");
 	printf("[0] %d\n", etret);
 	etret = do_export_container(c, "");
 	printf("[1] %d\n", etret);
