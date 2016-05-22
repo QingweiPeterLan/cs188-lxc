@@ -37,17 +37,12 @@ static int my_parser(struct lxc_arguments* args, int c, char* arg)
 {
 	switch (c) {
 	case 'e': args->exportname = arg; break;
-	case 's':
-		args->etype = SNAPSHOT;
-		args->snapshotname = arg;
-		break;
 	}
 	return 0;
 }
 
 static const struct option my_longopts[] = {
 	{"export", required_argument, 0, 'e'},
-	{"snapshot", required_argument, 0, 's'},
 	LXC_COMMON_OPTIONS,
 };
 
@@ -56,11 +51,10 @@ static struct lxc_arguments my_args = {
 	.help     = "\
 --name=NAME\n\
 \n\
-lxc-export exports a container or snapshot\n\
+lxc-export exports a container\n\
 \n\
 Options :\n\
   -n, --name=NAME       NAME of the container\n\
-  -s  --snapshot=NAME   NAME of the snapshot of container\n\
   -e, --export=NAME     NAME of the output container\n",
 	.name     = NULL,
 	.options  = my_longopts,
@@ -69,13 +63,11 @@ Options :\n\
 };
 
 static int do_export_container(struct lxc_container *c, const char *detailsfile);
-static int do_export_snapshot(struct lxc_container *c, const char *snapshotname, const char *detailsfile);
 
 int main(int argc, char *argv[])
 {
 	int ret = EXIT_FAILURE;
 
-	my_args.etype = CONTAINER;
 	if (lxc_arguments_parse(&my_args, argc, argv))
 		exit(ret);
 
@@ -107,34 +99,6 @@ int main(int argc, char *argv[])
 		goto out;
 	}
 
-	// check if snapshot exists
-	if (my_args.snapshotname) {
-		struct lxc_snapshot *s;
-		int i, n;
-		n = c->snapshot_list(c, &s);
-		if (n < 0) {
-			printf("Error getting snapshots for container%s\n", name);
-			goto out;
-		}
-		if (n == 0) {
-			printf("Container %s has no snapshots\n", name);
-			goto out;
-		}
-
-		int exists = 0;
-		for (i = 0; i < n; ++i) {
-			if (!strcmp(my_args.snapshotname, s[i].name)) {
-				printf("%s (%s) %s\n", s[i].name, s[i].lxcpath, s[i].timestamp);
-				exists = 1;
-			}
-			s[i].free(&s[i]);
-		}
-		if (!exists) {
-			printf("Snapshot `%s' for container %s does not exist\n", my_args.snapshotname, name);
-			goto out;
-		}
-	}
-
 	// create directory for storing exports
 	if (mkdir_p(lxc_export_path, 0700)) {
 		if (errno == EACCES) {
@@ -145,34 +109,19 @@ int main(int argc, char *argv[])
 		printf("Successfully created directory %s\n", lxc_export_path);
 	}
 
-
 	// execute task
 	int etret = 0;
-	switch (my_args.etype) {
-		case CONTAINER:
-			printf("TYPE: CONTAINER\n");
-			printf("[0] %d\n", etret);
-			etret = do_export_container(c, "");
-			printf("[1] %d\n", etret);
-			break;
-		case SNAPSHOT:
-			printf("TYPE: SNAPSHOT\n");
-			printf("[2] %d\n", etret);
-			etret = do_export_snapshot(c, "", "");
-			printf("[3] %d\n", etret);
-			break;
-		default: goto out;
-	}
+	printf("TYPE: CONTAINER\n");
+	printf("[0] %d\n", etret);
+	etret = do_export_container(c, "");
+	printf("[1] %d\n", etret);
 
 	if (etret)
 		printf("Error in executing task, %d\n", etret);
 	
 
 	// temporary, remove later
-	if (my_args.snapshotname)
-		printf("name: %s, snapshot: %s, export name: %s\n", my_args.name, my_args.snapshotname, my_args.exportname);
-	else
-		printf("name: %s, export name: %s\n", my_args.name, my_args.exportname);
+	printf("name: %s, export name: %s\n", my_args.name, my_args.exportname);
 
 out:
 	lxc_container_put(c);
@@ -187,16 +136,5 @@ static int do_export_container(struct lxc_container *c, const char *detailsfile)
 	printf("[01] RET %d\n", r);
 	if (r == 15)
 		printf("[02] EXPORT CONTAINER NOT YET IMPLEMENTED\n");
-	return r;
-}
-
-static int do_export_snapshot(struct lxc_container *c, const char *snapshotname, const char *detailsfile)
-{
-	int r = 0;
-	printf("[10] RET %d\n", r);
-	r = c->export_snapshot(c, snapshotname, detailsfile);
-	printf("[11] RET %d\n", r);
-	if (r == 15)
-		printf("[12] EXPORT SNAPSHOT NOT YET IMPLEMENTED\n");
 	return r;
 }

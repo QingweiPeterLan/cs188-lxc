@@ -828,11 +828,6 @@ struct lxc_container {
 	 *
 	 */
 	int (*export_container)(struct lxc_container *c, const char *outputname, const char *detailsfile);
-
-	/*!
-	 *
-	 */
-	int (*export_snapshot)(struct lxc_container *c, const char *snapshotname, const char *detailsfile);
 };
 
 /*!
