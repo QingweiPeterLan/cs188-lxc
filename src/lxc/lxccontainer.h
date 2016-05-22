@@ -712,16 +712,6 @@ struct lxc_container {
 	bool (*snapshot_destroy)(struct lxc_container *c, const char *snapname);
 
 	/*!
-	 *
-	 */
-	int (*export_container)(struct lxc_container *c, const char *outputname, const char *detailsfile);
-
-	/*!
-	 *
-	 */
-	int (*export_snapshot)(struct lxc_container *c, const char *snapshotname, const char *detailsfile);
-
-	/*!
 	 * \brief Determine if the caller may control the container.
 	 *
 	 * \param c Container.
@@ -833,6 +823,16 @@ struct lxc_container {
 	 * \return \c 0 on success, nonzero on failure.
 	 */
 	int (*migrate)(struct lxc_container *c, unsigned int cmd, struct migrate_opts *opts, unsigned int size);
+
+	/*!
+	 *
+	 */
+	int (*export_container)(struct lxc_container *c, const char *outputname, const char *detailsfile);
+
+	/*!
+	 *
+	 */
+	int (*export_snapshot)(struct lxc_container *c, const char *snapshotname, const char *detailsfile);
 };
 
 /*!
