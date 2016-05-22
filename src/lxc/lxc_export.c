@@ -133,11 +133,12 @@ out:
 
 static int do_export_container(struct lxc_container *c, const char *detailsfile)
 {
-	int r = 0;
-	printf("[00] RET %d\n", r);
-	r = c->export_container(c, my_args.exportname, detailsfile);
-	printf("[01] RET %d\n", r);
-	if (r == 15)
-		printf("[02] EXPORT CONTAINER NOT YET IMPLEMENTED\n");
-	return r;
+	struct lxc_container *nc = NULL;
+	// printf("[00] RET %d\n", r);
+	nc = c->clone(c, my_args.exportname, lxc_export_path, 0, my_args.bdevtype, NULL, my_args.fssize, NULL);
+	// r = c->export_container(c, my_args.exportname, detailsfile);
+	// printf("[01] RET %d\n", r);
+	if (!nc)
+		printf("clone failed\n");
+	return 0;
 }

@@ -831,6 +831,15 @@ struct lxc_container {
 };
 
 /*!
+ * \brief An LXC container export.
+ */
+struct lxc_export {
+	char *name; /*< Name of snapshot */
+	char *timestamp; /*< Time export was created */
+	char *lxcpath; /*!< Full path to LXCPATH for export */
+};
+
+/*!
  * \brief An LXC container snapshot.
  */
 struct lxc_snapshot {

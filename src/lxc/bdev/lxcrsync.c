@@ -107,11 +107,16 @@ int rsync_rootfs(struct rsync_data *data)
 		}
 	}
 
+	INFO("orig->src: %s, orig->dest: %s", orig->src, orig->dest);
+
 	// If not a snapshot, copy the fs.
 	if (orig->ops->mount(orig) < 0) {
 		ERROR("failed mounting %s onto %s", orig->src, orig->dest);
 		return -1;
 	}
+
+	INFO("new->src: %s, new->dest: %s", new->src, new->dest);
+
 	if (new->ops->mount(new) < 0) {
 		ERROR("failed mounting %s onto %s", new->src, new->dest);
 		return -1;

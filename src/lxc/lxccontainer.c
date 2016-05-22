@@ -3119,6 +3119,7 @@ static struct lxc_container *do_lxcapi_clone(struct lxc_container *c, const char
 		}
 	}
 
+	INFO("lxcpath: %s", lxcpath);
 	c2 = lxc_container_new(newname, lxcpath);
 	if (!c2) {
 		ERROR("clone: failed to create new container (%s %s)", newname,
@@ -3127,6 +3128,7 @@ static struct lxc_container *do_lxcapi_clone(struct lxc_container *c, const char
 	}
 
 	// copy/snapshot rootfs's
+	INFO("config path: %s", c2->config_path);
 	ret = copy_storage(c, c2, bdevtype, flags, bdevdata, newsize);
 	if (ret < 0)
 		goto out;
