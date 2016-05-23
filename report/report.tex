@@ -1,0 +1,148 @@
+\documentclass[12pt]{article}
+
+\usepackage{geometry}
+\usepackage{changepage}
+
+\geometry{letterpaper, left=1in, right=1in, top=1in, bottom=1in}
+\setlength{\parskip}{1em}
+
+\begin{document}
+
+\title{Linux Containers (LXC)}
+\author{Qingwei Lan (404458762)\\ \textit{University of California, Los Angeles}}
+\maketitle
+
+\newenvironment{dent}{\begin{adjustwidth}{0.35in}{}}{\end{adjustwidth}}
+
+
+
+\section{Introduction to Linux Containers}
+
+Linux Containers is an implementation for the ``containers" concept. Traditionally virtualization starts with the physical hardware at the bottom, then comes the kernel and operating system, and above that is the hypervisor. Atop the hypervisor are the virtual machine images that allow the user to run many different systems. A container is similar to the traditional virtualization method except that it doesn't have the hypervisor layer.
+
+A major advantage of containers over traditional virtual machines is speed since containers do not run an individual operating system but shares the same host operating system. This allows it to make efficient use of system calls and hardware resources without going through the hypervisor layer.
+
+Linux Containers provides a virtual envoronment complete with its own CPU, memory, and I/O, which is made possible by cgroups and namespaces in the Linux kernel.
+
+
+
+\section{Commonly Used LXC Commands}
+
+In this section I will introduce some of the most commonly used commands in the current stable 2.0 version of LXC. These command binaries can be found in the \texttt{src/lxc} directory after compilation through the command ``\texttt{./autogen.sh \&\& ./configure \&\& make}".
+
+{\parindent0pt % disables indentation for all text between { and }
+
+\texttt{lxc-create, lxc-destroy}
+\begin{dent}
+These two commands are used to create and destroy containers, taking the container name as the parameter. For example to create and destroy a container named \texttt{p1}, we execute the following commands
+
+\texttt{\$ lxc-create --name p1}\\
+\texttt{\$ lxc-destroy --name p1}
+\end{dent}
+
+
+\texttt{lxc-start, lxc-stop}
+\begin{dent}
+These two commands are used to start a container and stop a container, taking the container name as the parameter. We could also start a container in the background by setting an optional parameter \texttt{--daemon}. Stopping a container kills all processes within the container. For example to start and stop a container named \texttt{p1}, we execute the following commands
+
+\texttt{\$ \# runs in background if --daemon is set}\\
+\texttt{\$ lxc-start --name p1 [--daemon]}\\
+\texttt{\$ lxc-stop --name p1}
+\end{dent}
+
+
+\texttt{lxc-freeze, lxc-unfreeze}
+\begin{dent}
+These two commands are used to temporarily stop all processes in containers or resume the stopped processes. The two commands take the container name as the parameter. For example to freeze and unfreeze a container named \texttt{p1}, we execute the following commands
+
+\texttt{\$ lxc-freeze --name p1}\\
+\texttt{\$ lxc-unfreeze --name p1}
+\end{dent}
+
+
+\texttt{lxc-ls}
+\begin{dent}
+This command is used to list all containers in the system. Because it is built on top of the GNU \texttt{ls} program, it can be run with the options of the \texttt{ls} program. Following are example commands
+
+\texttt{\$ lxc-ls \# list all containers}\\
+\texttt{\$ lxc-ls -Cl \# list all containers in one column}\\
+\texttt{\$ lxc-ls -l \# list all containers and permissions}
+\end{dent}
+
+
+\texttt{lxc-info}
+\begin{dent}
+This command is used for displaying the information of a specific container, taking the name of the container as the parameter. For example to show the information of a container named \texttt{p1}, we execute the following command
+
+\texttt{\$ lxc-info --name p1}
+\end{dent}
+
+
+\texttt{lxc-monitor}
+\begin{dent}
+This command is used for monitoring the states of one or more containers. It takes the container names (in regular expression format) as the parameter. The command will output state changes for the specified containers. Following are example commands to monitor containers named \texttt{a} and \texttt{b} or all containers in the system
+
+\texttt{\$ lxc-monitor --name a \# monitor container a}\\
+\texttt{\$ lxc-monitor --name `a|b' \# monitor containers a and b}\\
+\texttt{\$ lxc-monitor --name `.*' \# monitor all containers}
+\end{dent}
+
+
+\texttt{lxc-wait}
+\begin{dent}
+This command waits for a container to reach one or more specific states and exits. It takes the container name and intended states as parameters. Following are examples to wait on a container called \texttt{p1}
+
+\texttt{\$ \# exits when RUNNING is reached}\\
+\texttt{\$ lxc-wait --name p1 --states RUNNING}
+
+\texttt{\$ \# exits when RUNNING or STOPPED is reached}\\
+\texttt{\$ lxc-wait --name p1 --states RUNNING|STOPPED}
+\end{dent}
+
+
+\texttt{lxc-attach}
+\begin{dent}
+This command starts a process inside a running container, taking the name of container and the command to run as parameters. The container has to be running in order for this command to work. To spawn a new shell inside a container named \texttt{p1}, execute the following command
+
+\texttt{\$ lxc-attach --name p1}
+\end{dent}
+
+
+\texttt{lxc-copy}
+\begin{dent}
+This command creates a copy of existing containers and optionally starts the copy. It takes the to-be-copied container name as a parameter. This command is intended to replace the deprecated commands \texttt{lxc-clone} and \texttt{lxc-start-ephemeral}.
+\end{dent}
+} % restore indentation
+
+
+\section{New LXC Commands}
+
+For my project I will be adding a direcory method to the outer layer of the container. The method will be \texttt{lxc-pd} (print directories in a container).
+
+Then I will build an export system \texttt{lxc-export} where users can export a certain snapshot of a container so that it can be used as a base for future containers.
+
+\subsection{\texttt{lxc-pd} (print-directory)}
+
+This command will be used to print directories in a container specified by the \texttt{--name} or \texttt{-n} option. It will print recursively for \texttt{N} levels (default is 1) starting from the root directory. The number of levels can be specified with the option \texttt{--level} or \texttt{-l} followed by the number of levels. An example usage will be
+
+\texttt{\$ lxc-pd --name p1 --level 5}
+
+\noindent This will print directories in container \texttt{p1} for up to 5 levels of recursion.
+
+\subsection{\texttt{lxc-export} (export-container)}
+
+This command will export a certain container or a container snapshot as a ``base container" that can be used for future containers. In other words, the container in question can be used as the base for another container. We specify the container name with the \texttt{--name} or \texttt{-n} option, the snapshot name with the \texttt{--snapshot} or \texttt{-s} option, and the output name with the \texttt{--export} or \texttt{-e} option.
+
+\noindent To export the current state of a container named \texttt{p1} to output named \texttt{base0}, we use the following command
+
+\texttt{\$ lxc-export --name p1 --export base0}
+
+\noindent To export the snapshot named \texttt{snap0} of container named \texttt{p1} to output named \texttt{base0}, we use the following command
+
+\texttt{\$ lxc-export --name p1 --snapshot snap0 --export base0}
+
+\noindent Now that we have exported a container, we can create new containers from this container using the original \texttt{lxc-create} command with the \texttt{--base} or \texttt{-b} option. To create a container named \texttt{p2} with the exported base container \texttt{base0}, we use the following command
+
+\texttt{\$ lxc-create --name p2 --base base0}
+
+\end{document}
