@@ -1,50 +1,114 @@
 
 ------------------------------- LXC Project Log -------------------------------
 
+============================== ENVIRONMENT SETUP ==============================
+
+To setup the environment I had to first setup the environment
+
+  $ sudo apt-get update
+  $ sudo apt-get install autotools-dev automake autoconf pkg-config
+  $ sudo apt-get install bridge-utils
+
+Then I installed Linux Containers
+
+  $ cd Desktop/lxc
+  $ ./autogen.sh
+  $ ./configure && make && sudo make install
+
+Then I used the following command to get my network cards
+
+  $ sudo ls /sys/class/net
+
+    enp9s0  lo  wlp3s0
+
+Then I create a bridge interface for using Linux Containers
+
+  $ sudo emacs /etc/network/interfaces
+
+    # interfaces(5) file used by ifup(8) and ifdown(8)
+    auto lo
+    iface lo inet loopback
+
+    # bridge name
+    auto br0
+
+    # bridge information
+    iface br0 inet dhcp
+    bridge_ports enp9s0 wlp3s0
+    bridge_stp off
+    bridge_fd 9
+    bridge_maxwait 0
+
+  $ (emacs) C-x C-c
+  $ sudo ifup br0
+  $ sudo emacs /usr/local/etc/lxc/default.conf
+
+    lxc.network.type = veth
+    lxc.network.link = br0 # replaced original lxcbr0
+    lxc.network.flags = up
+    lxc.network.hwaddr = 00:16:3e:xx:xx:xx
+
+  $ (emacs) C-x C-c
+
+Then I checked if the environment is ok to run containers
+
+  $ sudo lxc-checkconfig
+
+Now the environment is set up and we can create and run containers in it.
+
 
 ================================== DEBUGGING ==================================
 
-  (1) I got a bug where I could not figure out why the function
-      'c->export_container' returned random numbers. I tried debugging by
-      adding new functions to the file 'lxccontainer.c' and changing the
-      return types but they always gave random results.
+(1) I got a bug where I could not figure out why the function
+    'c->export_container' returned random numbers. I tried debugging by adding
+    new functions to the file 'lxccontainer.c' and changing the return types
+    but they always gave random results.
 
-      First I suspected that it may have to do with the build system, since
-      the 'lxccontainer.c' was compiled into a shared library. To verify that
-      I did not need to mess around with Makefiles, I looked at the git
-      history of all changes made to files 'lxccontainer.h', 'lxccontainer.c',
-      and 'Makefile.am' with the commands
+    First I suspected that it may have to do with the build system, since the
+    'lxccontainer.c' was compiled into a shared library. To verify that I did
+    not need to mess around with Makefiles, I looked at the git history of all
+    changes made to files 'lxccontainer.h', 'lxccontainer.c', and
+    'Makefile.am' with the commands
 
-        $ git log --follow -p src/lxc/lxccontainer.h
-        $ git log --follow -p src/lxc/lxccontainer.c
-        $ git log --follow -p src/lxc/Makefile.am
+      $ git log --follow -p src/lxc/lxccontainer.h
+      $ git log --follow -p src/lxc/lxccontainer.c
+      $ git log --follow -p src/lxc/Makefile.am
 
-      The history showed no major changes made to the build system so I was
-      realized that it had nothing to do with the build system.
+    The history showed no major changes made to the build system so I was
+    realized that it had nothing to do with the build system.
 
-      Then I figured that this might have something to do with the file system
-      layout so I simply created a container environment for developing LXC.
-      Inside the container I installed the following packages with
+    Then I figured that this might have something to do with the file system
+    layout so I simply created a container environment for developing LXC.
+    Inside the container I installed the following packages with
 
-        $ sudo apt-get install autotools-dev automake autoconf pkg-config
-        $ sudo apt-get install linux-headers-generic
+      $ sudo apt-get install autotools-dev automake autoconf pkg-config
+      $ sudo apt-get install linux-headers-generic
 
-      I also configured the contianer to allow nested containers by adding the
-      following lines to the container configuration file
+    I also configured the contianer to allow nested containers by adding the
+    following lines to the container configuration file
 
-        lxc.mount.auto = cgroup
-        lxc.aa_profile = lxc-container-default-with-nesting
+      lxc.mount.auto = cgroup
+      lxc.aa_profile = lxc-container-default-with-nesting
 
-      For my container I added it to the file '/var/lib/lxc/p1/config'.
-      Inside the container I installed my version using the following commands
+    For my container I added it to the file '/var/lib/lxc/p1/config'.
+    Inside the container I installed my version using the following commands
 
-        $ ./autogen.sh
-        $ ./configure && make && make install
+      $ ./autogen.sh
+      $ ./configure && make && sudo make install
 
-      Then I created a container and ran my tests
+    Then I created a container and ran my tests
 
-        $ sudo lxc-create -t ubuntu -n p0
-        $ sudo lxc-export -n p0 -e out
+      $ sudo lxc-create -t ubuntu -n p0
+      $ sudo lxc-export -n p0 -e out
 
-      This test finally returned the correct return values as I had put in the
-      function in 'lxccontainer.c'.
+    This test finally returned the correct return values as I had put in the
+    function in 'lxccontainer.c'.
+
+(2) Within the container I tried cloning a container but it didn't work
+    well. Nested containers were a mess so I reverted to my original style but this time I knew that I had to put the binaries under '/usr/local/' and not in my local development directory. I repeated the steps above
+
+      $ sudo apt-get install autotools-dev automake autoconf pkg-config
+      $ ./autogen.sh
+      $ ./configure && make && sudo make install
+
+    This time, my 'lxc-export' program worked and cloning also worked.
