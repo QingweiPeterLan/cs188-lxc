@@ -24,6 +24,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
+#include <dirent.h>
 
 #include <lxc/lxccontainer.h>
 
@@ -32,17 +33,20 @@
 #include "utils.h"
 
 static char *lxc_export_path = "/var/lib/lxcexport/";
+static bool list_only = false;
 
 static int my_parser(struct lxc_arguments* args, int c, char* arg)
 {
 	switch (c) {
 	case 'e': args->exportname = arg; break;
+	case 'L': list_only = true; break;
 	}
 	return 0;
 }
 
 static const struct option my_longopts[] = {
 	{"export", required_argument, 0, 'e'},
+	{"list", no_argument, 0, 'L'},
 	LXC_COMMON_OPTIONS,
 };
 
@@ -56,18 +60,19 @@ lxc-export exports a container\n\
 Options :\n\
   -n, --name=NAME       NAME of the container\n\
   -e, --export=NAME     NAME of the output container\n",
-	.name     = NULL,
 	.options  = my_longopts,
 	.parser   = my_parser,
 	.checker  = NULL,
 };
 
 static int do_export_container(struct lxc_container *c, const char *detailsfile);
+static int do_export_list(const char *name, int level);
 
 int main(int argc, char *argv[])
 {
 	int ret = EXIT_FAILURE;
 
+	my_args.name = "";
 	if (lxc_arguments_parse(&my_args, argc, argv))
 		exit(ret);
 
@@ -79,9 +84,25 @@ int main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	lxc_log_options_no_override();
 
-	if (!my_args.exportname) {
-		printf("%s: missing output name, use --export option\n", my_args.progname);
-		exit(ret);
+	if (!list_only) {
+		if (!strcmp(my_args.name, "")) {
+			printf("%s: missing container name, use --name option\n", my_args.progname);
+			exit(ret);
+		}
+		if (!my_args.exportname) {
+			printf("%s: missing output name, use --export option\n", my_args.progname);
+			exit(ret);
+		}
+	} else {
+		// printf("* Listing all exports...\n");
+		if (do_export_list(lxc_export_path, 0)) {
+			printf("* Failed to list all exports\n");
+			exit(EXIT_FAILURE);
+		} else {
+			printf("\n");
+			// printf("* Successfully listed all exports\n");
+			exit(EXIT_SUCCESS);
+		}
 	}
 
 	const char *name = my_args.name;
@@ -137,5 +158,48 @@ static int do_export_container(struct lxc_container *c, const char *detailsfile)
 	printf("[00] RET %d\n", r);
 	r = c->export_container(c, my_args.exportname, lxc_export_path, my_args.bdevtype, my_args.fssize);
 	printf("[01] RET %d\n", r);
+	return 0;
+}
+
+static int do_export_list(const char *name, int level)
+{
+	DIR *dir;
+	struct dirent *entry;
+
+	if (!(dir = opendir(name)))
+		return 1;
+	if (!(entry = readdir(dir)))
+		return 1;
+
+	bool has_rootfs = false, has_config = false;
+
+	do {
+		if (entry->d_type == DT_DIR) {
+			if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0)
+					continue;
+			if (level == 0) {
+				char path[1024];
+				int len = snprintf(path, sizeof(path)-1, "%s/%s", name, entry->d_name);
+				path[len] = 0;
+				if (do_export_list(path, level+1) == 2)
+					printf("%s ", entry->d_name);
+				else
+					return 1;
+			} else if (level == 1) {
+				if (strcmp(entry->d_name, "rootfs") == 0)
+					has_rootfs = true;
+				// printf("  %s\n", entry->d_name);
+			}
+		} else {
+			if (strcmp(entry->d_name, "config") == 0)
+				has_config = true;
+			// printf("  %s\n", entry->d_name);
+		}
+	} while ((entry = readdir(dir)) != NULL);
+	closedir(dir);
+
+	if (level == 1 && has_config && has_rootfs)
+		return 2;
+
 	return 0;
 }
