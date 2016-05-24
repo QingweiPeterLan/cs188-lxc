@@ -120,6 +120,10 @@ struct lxc_arguments {
 	int keepname;
 	int keepmac;
 
+	/* lxc-export */
+	char *exportname;
+	char *createname;
+
 	/* lxc-ls */
 	char *ls_fancy_format;
 	char *ls_filter;

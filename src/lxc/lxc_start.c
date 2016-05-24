@@ -275,6 +275,9 @@ int main(int argc, char *argv[])
 		}
 	}
 
+	INFO("lxc config_path: %s", c->config_path);
+	INFO("lxc configfile: %s", c->configfile);
+
 	if (c->is_running(c)) {
 		ERROR("Container is already running.");
 		err = 0;
