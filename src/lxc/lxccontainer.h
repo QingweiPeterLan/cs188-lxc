@@ -823,6 +823,25 @@ struct lxc_container {
 	 * \return \c 0 on success, nonzero on failure.
 	 */
 	int (*migrate)(struct lxc_container *c, unsigned int cmd, struct migrate_opts *opts, unsigned int size);
+
+	/*!
+	 *
+	 */
+	int (*export_container)(struct lxc_container *c, const char *exportname, const char *exportpath, const char *bdevtype, uint64_t fssize);
+
+	/*!
+	 *
+	 */
+	int (*export_create_container)(struct lxc_container *c, const char *createname, const char *createpath, const char *bdevtype, uint64_t fssize);
+};
+
+/*!
+ * \brief An LXC container export.
+ */
+struct lxc_export {
+	char *name; /*< Name of snapshot */
+	char *timestamp; /*< Time export was created */
+	char *lxcpath; /*!< Full path to LXCPATH for export */
 };
 
 /*!
