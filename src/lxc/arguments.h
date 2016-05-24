@@ -122,6 +122,7 @@ struct lxc_arguments {
 
 	/* lxc-export */
 	char *exportname;
+	char *createname;
 
 	/* lxc-ls */
 	char *ls_fancy_format;
