@@ -828,6 +828,11 @@ struct lxc_container {
 	 *
 	 */
 	int (*export_container)(struct lxc_container *c, const char *exportname, const char *exportpath, const char *bdevtype, uint64_t fssize);
+
+	/*!
+	 *
+	 */
+	int (*export_create_container)(struct lxc_container *c, const char *createname, const char *createpath, const char *bdevtype, uint64_t fssize);
 };
 
 /*!

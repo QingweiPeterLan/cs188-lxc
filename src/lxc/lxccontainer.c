@@ -3737,6 +3737,31 @@ static int lxcapi_export_container(struct lxc_container *c, const char *exportna
 		goto failure;
 	}
 
+failure:
+	lxc_container_put(ret);
+	return 1;
+
+success:
+	return 0;
+}
+
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+
+static int lxcapi_export_create_container(struct lxc_container *c, const char *createname, const char *createpath, const char *bdevtype, uint64_t fssize)
+{
+	INFO("CREATE CONTAINER [%s]", createname);
+
+	struct lxc_container *ret;
+	ret = lxcapi_clone(c, createname, createpath, 0, bdevtype, NULL, fssize, NULL);
+
+	if (ret) {
+		INFO("creation of %s:%s succeeded", c->config_path, c->name);
+		goto success;
+	} else {
+		ERROR("creation of %s:%s failed", c->config_path, c->name);
+		goto failure;
+	}
 
 failure:
 	lxc_container_put(ret);
@@ -4178,6 +4203,7 @@ struct lxc_container *lxc_container_new(const char *name, const char *configpath
 	c->snapshot_destroy = lxcapi_snapshot_destroy;
 	c->snapshot_destroy_all = lxcapi_snapshot_destroy_all;
 	c->export_container = lxcapi_export_container;
+	c->export_create_container = lxcapi_export_create_container;
 	c->may_control = lxcapi_may_control;
 	c->add_device_node = lxcapi_add_device_node;
 	c->remove_device_node = lxcapi_remove_device_node;

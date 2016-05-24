@@ -69,7 +69,9 @@ Options :\n\
 };
 
 static int do_export_container(void);
+static int do_export_create_container(void);
 static int do_export_list(const char *name, int level);
+static void do_print_container(struct lxc_container *c);
 
 int main(int argc, char *argv[])
 {
@@ -102,6 +104,7 @@ int main(int argc, char *argv[])
 			ret = do_export_container();
 		} else if (my_args.createname) {
 			printf("CREATE CONTAINER\n");
+			ret = do_export_create_container();
 		} else {
 			printf("%s: please use at least one of --export or --create\n", my_args.progname);
 			exit(EXIT_FAILURE);
@@ -124,7 +127,8 @@ int main(int argc, char *argv[])
 	else if (my_args.createname)
 		printf("name: %s, create name: %s\n", my_args.name, my_args.createname);
 
-	ret = EXIT_SUCCESS;
+	if (ret == EXIT_FAILURE)
+		printf("Program failed\n");
 
 	return ret;
 }
@@ -155,13 +159,38 @@ static int do_export_container(void)
 		return EXIT_FAILURE;
 	}
 
-	printf("  * name: %s\n", c->name);
-	printf("  * config path: %s\n", c->config_path);
-	printf("  * config file: %s\n", c->configfile);
+	do_print_container(c);
 
 	printf("[00] RET %d\n", r);
 	r = c->export_container(c, my_args.exportname, lxc_export_path, my_args.bdevtype, my_args.fssize);
 	printf("[01] RET %d\n", r);
+
+	return r ? EXIT_FAILURE : EXIT_SUCCESS;
+}
+
+static int do_export_create_container(void)
+{
+	int r = EXIT_SUCCESS;
+	struct lxc_container *c;
+
+	c = lxc_container_new(my_args.name, lxc_export_path);
+
+	if (!c) {
+		printf("Error: cannot create internal lxc container\n");
+		lxc_container_put(c);
+		return EXIT_FAILURE;
+	}
+	if (!c->is_defined(c)) {
+		printf("Error: cannot find container `%s', does not exist or permission denied\n", my_args.name);
+		lxc_container_put(c);
+		return EXIT_FAILURE;
+	}
+
+	do_print_container(c);
+
+	printf("[10] RET %d\n", r);
+	r = c->export_create_container(c, my_args.createname, my_args.lxcpath[0], my_args.bdevtype, my_args.fssize);
+	printf("[11] RET %d\n", r);
 
 	return r ? EXIT_FAILURE : EXIT_SUCCESS;
 }
@@ -187,7 +216,7 @@ static int do_export_list(const char *name, int level)
 				int len = snprintf(path, sizeof(path)-1, "%s/%s", name, entry->d_name);
 				path[len] = 0;
 				if (do_export_list(path, level+1) == 2)
-					printf("%s ", entry->d_name);
+					printf("%s\t", entry->d_name);
 				else
 					return 1;
 			} else if (level == 1) {
@@ -207,4 +236,11 @@ static int do_export_list(const char *name, int level)
 		return 2;
 
 	return 0;
+}
+
+static void do_print_container(struct lxc_container *c)
+{
+	printf("  * name: %s\n", c->name);
+	printf("  * config path: %s\n", c->config_path);
+	printf("  * config file: %s\n", c->configfile);
 }
