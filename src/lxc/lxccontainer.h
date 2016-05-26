@@ -825,28 +825,43 @@ struct lxc_container {
 	int (*migrate)(struct lxc_container *c, unsigned int cmd, struct migrate_opts *opts, unsigned int size);
 
 	/*!
+	 * \brief Create an export of an existing container.
 	 *
+	 * \param c Original container.
+	 * \param exportname Export name for the container.
+	 * \param exportpath Path in which to place the exported container.
+	 * \param bdevtype Optionally force the cloned bdevtype to a specified plugin.
+	 *  By default the original is used (subject to snapshot requirements).
+	 * \param fssize Note this only applies to the rootfs. For
+	 *  any other filesystems, the original size will be duplicated.
+	 *
+	 * \return \c 0 on success, nonzero on failure.
 	 */
 	int (*export_container)(struct lxc_container *c, const char *exportname, const char *exportpath, const char *bdevtype, uint64_t fssize);
 
 	/*!
+	 * \brief Create a new container from an exported container.
 	 *
+	 * \param c Exported container.
+	 * \param createname Name for new container.
+	 * \param createpath Path in which to create the new container.
+	 * \param bdevtype Optionally force the cloned bdevtype to a specified plugin.
+	 *  By default the original is used (subject to snapshot requirements).
+	 * \param fssize Note this only applies to the rootfs. For
+	 *  any other filesystems, the original size will be duplicated.
+	 *
+	 * \return \c 0 on success, nonzero on failure.
 	 */
 	int (*export_create_container)(struct lxc_container *c, const char *createname, const char *createpath, const char *bdevtype, uint64_t fssize);
 
 	/*!
+	 * \brief Destroy an exported container.
 	 *
+	 * \param c Container to destroy
+	 *
+	 * \return \c 0 on success, nonzero on failure.
 	 */
 	int (*export_destroy)(struct lxc_container *c);
-};
-
-/*!
- * \brief An LXC container export.
- */
-struct lxc_export {
-	char *name; /*< Name of snapshot */
-	char *timestamp; /*< Time export was created */
-	char *lxcpath; /*!< Full path to LXCPATH for export */
 };
 
 /*!
