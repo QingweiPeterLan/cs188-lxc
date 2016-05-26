@@ -34,6 +34,7 @@
 
 static char *lxc_export_path = "/var/lib/lxcexport/";
 static bool list_only = false;
+static bool delete_only = false;
 
 static int my_parser(struct lxc_arguments* args, int c, char* arg)
 {
@@ -41,6 +42,7 @@ static int my_parser(struct lxc_arguments* args, int c, char* arg)
 	case 'e': args->exportname = arg; break;
 	case 'c': args->createname = arg; break;
 	case 'L': list_only = true; break;
+	case 'D': delete_only = true; break;
 	}
 	return 0;
 }
@@ -49,6 +51,7 @@ static const struct option my_longopts[] = {
 	{"export", required_argument, 0, 'e'},
 	{"create", required_argument, 0, 'c'},
 	{"list", no_argument, 0, 'L'},
+	{"delete", no_argument, 0, 'D'},
 	LXC_COMMON_OPTIONS,
 };
 
@@ -62,7 +65,9 @@ lxc-export exports a container\n\
 Options :\n\
   -n, --name=NAME       NAME of the container\n\
   -c, --create=NAME     NAME of the newly created container\n\
-  -e, --export=NAME     NAME of the output container\n",
+  -e, --export=NAME     NAME of the output container\n\
+  -D, --delete          DELETE the specified export\n\
+  -L, --list            LIST all exported containers\n",
 	.options  = my_longopts,
 	.parser   = my_parser,
 	.checker  = NULL,
@@ -71,6 +76,7 @@ Options :\n\
 static int do_export_container(void);
 static int do_export_create_container(void);
 static int do_export_list(const char *name, int level);
+static int do_export_destroy(void);
 static void do_print_container(struct lxc_container *c);
 
 int main(int argc, char *argv[])
@@ -91,13 +97,21 @@ int main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	lxc_log_options_no_override();
 
+	if (!list_only && !delete_only && !strcmp(my_args.name, "")
+		&& !my_args.exportname && !my_args.createname) {
+		printf("%s: please specify name with --name or use --list\n", my_args.progname);
+		exit(EXIT_FAILURE);
+	}
+
 	if (!list_only) {
 		if (!strcmp(my_args.name, "")) {
 			printf("%s: missing container name, use --name option\n", my_args.progname);
 			exit(EXIT_FAILURE);
 		}
-		if (my_args.exportname && my_args.createname) {
-			printf("%s: please use only one of --export or --create\n", my_args.progname);
+		if ((my_args.exportname && my_args.createname) ||
+			(my_args.exportname && delete_only) ||
+			(my_args.createname && delete_only)) {
+			printf("%s: please use only one of --export, --create, --delete\n", my_args.progname);
 			exit(EXIT_FAILURE);
 		} else if (my_args.exportname) {
 			printf("EXPORT CONTAINER\n");
@@ -105,18 +119,23 @@ int main(int argc, char *argv[])
 		} else if (my_args.createname) {
 			printf("CREATE CONTAINER\n");
 			ret = do_export_create_container();
+		} else if (delete_only) {
+			printf("DELETE CONTAINER\n");
+			ret = do_export_destroy();
 		} else {
-			printf("%s: please use at least one of --export or --create\n", my_args.progname);
+			printf("%s: please use at least one of --export, --create, --delete\n", my_args.progname);
 			exit(EXIT_FAILURE);
 		}
 	} else {
-		// printf("* Listing all exports...\n");
+		if (strcmp(my_args.name, "") || my_args.exportname || my_args.createname || delete_only) {
+			printf("%s: to list exports, please do not use other options\n", my_args.progname);
+			exit(EXIT_FAILURE);
+		}
 		if (do_export_list(lxc_export_path, 0)) {
 			printf("* Failed to list all exports\n");
 			exit(EXIT_FAILURE);
 		} else {
 			printf("\n");
-			// printf("* Successfully listed all exports\n");
 			exit(EXIT_SUCCESS);
 		}
 	}
@@ -191,6 +210,33 @@ static int do_export_create_container(void)
 	printf("[10] RET %d\n", r);
 	r = c->export_create_container(c, my_args.createname, my_args.lxcpath[0], my_args.bdevtype, my_args.fssize);
 	printf("[11] RET %d\n", r);
+
+	return r ? EXIT_FAILURE : EXIT_SUCCESS;
+}
+
+static int do_export_destroy(void)
+{
+	int r = EXIT_SUCCESS;
+	struct lxc_container *c;
+
+	c = lxc_container_new(my_args.name, lxc_export_path);
+
+	if (!c) {
+		printf("Error: cannot create internal lxc container\n");
+		lxc_container_put(c);
+		return EXIT_FAILURE;
+	}
+	if (!c->is_defined(c)) {
+		printf("Error: cannot find container `%s', does not exist or permission denied\n", my_args.name);
+		lxc_container_put(c);
+		return EXIT_FAILURE;
+	}
+
+	do_print_container(c);
+
+	printf("[20] RET %d\n", r);
+	r = c->export_destroy(c);
+	printf("[21] RET %d\n", r);
 
 	return r ? EXIT_FAILURE : EXIT_SUCCESS;
 }

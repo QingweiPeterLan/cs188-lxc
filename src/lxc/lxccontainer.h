@@ -833,6 +833,11 @@ struct lxc_container {
 	 *
 	 */
 	int (*export_create_container)(struct lxc_container *c, const char *createname, const char *createpath, const char *bdevtype, uint64_t fssize);
+
+	/*!
+	 *
+	 */
+	int (*export_destroy)(struct lxc_container *c);
 };
 
 /*!
