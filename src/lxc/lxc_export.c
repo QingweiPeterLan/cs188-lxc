@@ -77,7 +77,7 @@ static int do_export_container(void);
 static int do_export_create_container(void);
 static int do_export_list(const char *name, int level);
 static int do_export_destroy(void);
-static void do_print_container(struct lxc_container *c);
+// static void do_print_container(struct lxc_container *c);
 
 int main(int argc, char *argv[])
 {
@@ -87,7 +87,7 @@ int main(int argc, char *argv[])
 	if (lxc_arguments_parse(&my_args, argc, argv))
 		exit(EXIT_FAILURE);
 
-	printf("global lxcpath: %s\n", my_args.lxcpath[0]);
+	// printf("global lxcpath: %s\n", my_args.lxcpath[0]);
 
 	if (!my_args.log_file)
 		my_args.log_file = "none";
@@ -114,13 +114,13 @@ int main(int argc, char *argv[])
 			printf("%s: please use only one of --export, --create, --delete\n", my_args.progname);
 			exit(EXIT_FAILURE);
 		} else if (my_args.exportname) {
-			printf("EXPORT CONTAINER\n");
+			// printf("EXPORT CONTAINER\n");
 			ret = do_export_container();
 		} else if (my_args.createname) {
-			printf("CREATE CONTAINER\n");
+			// printf("CREATE CONTAINER\n");
 			ret = do_export_create_container();
 		} else if (delete_only) {
-			printf("DELETE CONTAINER\n");
+			// printf("DELETE CONTAINER\n");
 			ret = do_export_destroy();
 		} else {
 			printf("%s: please use at least one of --export, --create, --delete\n", my_args.progname);
@@ -162,7 +162,7 @@ static int do_export_container(void)
 		printf("Permission denied, please run as root\n");
 		return EXIT_FAILURE;
 	} else {
-		printf("Successfully created directory %s\n", lxc_export_path);
+		// printf("Successfully created directory %s\n", lxc_export_path);
 	}
 
 	c = lxc_container_new(my_args.name, my_args.lxcpath[0]);
@@ -178,11 +178,11 @@ static int do_export_container(void)
 		return EXIT_FAILURE;
 	}
 
-	do_print_container(c);
+	// do_print_container(c);
 
-	printf("[00] RET %d\n", r);
+	// printf("[00] RET %d\n", r);
 	r = c->export_container(c, my_args.exportname, lxc_export_path, my_args.bdevtype, my_args.fssize);
-	printf("[01] RET %d\n", r);
+	// printf("[01] RET %d\n", r);
 
 	return r ? EXIT_FAILURE : EXIT_SUCCESS;
 }
@@ -205,11 +205,11 @@ static int do_export_create_container(void)
 		return EXIT_FAILURE;
 	}
 
-	do_print_container(c);
+	// do_print_container(c);
 
-	printf("[10] RET %d\n", r);
+	// printf("[10] RET %d\n", r);
 	r = c->export_create_container(c, my_args.createname, my_args.lxcpath[0], my_args.bdevtype, my_args.fssize);
-	printf("[11] RET %d\n", r);
+	// printf("[11] RET %d\n", r);
 
 	return r ? EXIT_FAILURE : EXIT_SUCCESS;
 }
@@ -232,11 +232,11 @@ static int do_export_destroy(void)
 		return EXIT_FAILURE;
 	}
 
-	do_print_container(c);
+	// do_print_container(c);
 
-	printf("[20] RET %d\n", r);
+	// printf("[20] RET %d\n", r);
 	r = c->export_destroy(c);
-	printf("[21] RET %d\n", r);
+	// printf("[21] RET %d\n", r);
 
 	return r ? EXIT_FAILURE : EXIT_SUCCESS;
 }
@@ -284,9 +284,9 @@ static int do_export_list(const char *name, int level)
 	return 0;
 }
 
-static void do_print_container(struct lxc_container *c)
-{
-	printf("  * name: %s\n", c->name);
-	printf("  * config path: %s\n", c->config_path);
-	printf("  * config file: %s\n", c->configfile);
-}
+// static void do_print_container(struct lxc_container *c)
+// {
+// 	printf("  * name: %s\n", c->name);
+// 	printf("  * config path: %s\n", c->config_path);
+// 	printf("  * config file: %s\n", c->configfile);
+// }
