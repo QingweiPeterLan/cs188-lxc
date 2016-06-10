@@ -117,32 +117,82 @@ This command creates a copy of existing containers and optionally starts the cop
 
 \section{New LXC Commands}
 
-For my project I will be adding a direcory method to the outer layer of the container. The method will be \texttt{lxc-pd} (print directories in a container).
+For my project I added a direcory method to the outer layer of the container. The method is \texttt{lxc-pd} (print directories in a container).
 
-Then I will build an export system \texttt{lxc-export} where users can export a certain snapshot of a container so that it can be used as a base for future containers.
+Then I built an export system \texttt{lxc-export} where users can export a certain snapshot of a container so that it can be used as a base for future containers.
 
 \subsection{\texttt{lxc-pd} (print-directory)}
 
-This command will be used to print directories in a container specified by the \texttt{--name} or \texttt{-n} option. It will print recursively for \texttt{N} levels (default is 1) starting from the root directory. The number of levels can be specified with the option \texttt{--level} or \texttt{-l} followed by the number of levels. An example usage will be
+This command is be used to print directories in a container specified by the \texttt{--name} or \texttt{-n} option. It will print recursively for \texttt{N} levels (default is print all levels) starting from the root directory. The number of levels can be specified with the option \texttt{--dir-level} or \texttt{-L} followed by the number of levels. An example usage will be
 
-\texttt{\$ lxc-pd --name p1 --level 5}
+\texttt{\$ lxc-pd --name p1 --dir-level 5}
 
-\noindent This will print directories in container \texttt{p1} for up to 5 levels of recursion.
+\noindent This will print directories in container \texttt{p1} for up to 5 levels of recursion. To print only directories, we can specify the \texttt{--dir-only} or \texttt{-d} option. An example usage will be
+
+\texttt{\$ lxc-pd --name p1 --dir-only}
 
 \subsection{\texttt{lxc-export} (export-container)}
 
-This command will export a certain container or a container snapshot as a ``base container" that can be used for future containers. In other words, the container in question can be used as the base for another container. We specify the container name with the \texttt{--name} or \texttt{-n} option, the snapshot name with the \texttt{--snapshot} or \texttt{-s} option, and the output name with the \texttt{--export} or \texttt{-e} option.
+This command will export a certain container or a container snapshot as a ``base container" that can be used for future containers. In other words, the container in question can be used as the base for another container.
 
-\noindent To export the current state of a container named \texttt{p1} to output named \texttt{base0}, we use the following command
+\subsubsection{Export Container}
 
-\texttt{\$ lxc-export --name p1 --export base0}
+To export a container we use the \texttt{--name} or \texttt{-n} option to specify the name of the container we want to export and the \texttt{--export} or \texttt{-e} option to specify the exported container name. An example usage would be
 
-\noindent To export the snapshot named \texttt{snap0} of container named \texttt{p1} to output named \texttt{base0}, we use the following command
+\texttt{\$ lxc-export --name p1 --export swift-dev}
 
-\texttt{\$ lxc-export --name p1 --snapshot snap0 --export base0}
+\noindent This create an exported container named \texttt{swift-dev} and saves the state of the container \texttt{p1}. Note that exported containers are static read-only and they cannot be started or modified.
 
-\noindent Now that we have exported a container, we can create new containers from this container using the original \texttt{lxc-create} command with the \texttt{--base} or \texttt{-b} option. To create a container named \texttt{p2} with the exported base container \texttt{base0}, we use the following command
+\subsubsection{Listing Exported Containers}
 
-\texttt{\$ lxc-create --name p2 --base base0}
+In order to list all the exported containers we simply use the \texttt{--list} or \texttt{-L} option in the command. An example usage will be
+
+\texttt{\$ lxc-export -L}
+
+\noindent This command lists all the previously exported containers.
+
+\subsubsection{Creating a New Container From Exported Containers}
+
+To create a new container from an exported container is one of the most crucial things of this project. To do that we use the \texttt{--name} or \texttt{-n} option to specify the name of the exported container and the \texttt{--create} or \texttt{-c} option to specify the name of the new container-to-be-created. An example usage will be
+
+\texttt{\$ lxc-export --name swift-dev --create p2}
+
+\noindent This command creates a new container \texttt{p2} from the exported container \texttt{swift-dev}.
+
+\subsubsection{Deleting an Exported Container}
+
+To delete an exported container, we use the \texttt{--name} or \texttt{-n} option to specify the name of the exported container we want to delete and the \texttt{--delete} or \texttt{-D} option to specify that we want to delete it. An example usage would be
+
+\texttt{\$ lxc-export --name swift-dev --delete}
+
+\noindent This command deletes the exported container named \texttt{swift-dev}.
+
+\section{Challenges of the Project}
+
+The main challenges of the project are listed below. Most of these challenges are the problem of a large code base.
+\begin{itemize}
+\item The biggest challenge was understanding the core implementation and flow of the implementation. LXC has many files working together and navigating through them was not easy. I found the `\texttt{grep}' command extremely helpful in this project.
+\item The core of LXC is hard to debug because of the lacking of debugging information. I tried using GDB step throughs to examine the assembly code but it was long and tedious. Valgrind did not help in this situation.
+\item The original core of LXC took an object-oriented approach in the C programming language that involved function pointers, which I have seen often in projects.
+\item When permissions are not met, the error messages are not explicit about it and it took me some time to figure out the permissions problem.
+\item Testing my implementation involved privileged operations so the code had to be installed in the root directory. I did not want to mess up my root directory so I made a container using LXC and installed my version of LXC in the root directory of the container.
+\end{itemize}
+
+\section{Future Development}
+
+The project is not production ready as it has not been throughly tested. There are also many aspects that can be further enhanced. Some of those are listed below.
+\begin{itemize}
+\item The public API can be further cleaned up. We can move the creation method to \texttt{lxc-create} and pass in an option to take an export as the base.
+\item This project can be further extended to export snapshots of a container. The basic idea would be similar and the only changes would be made to configuration files.
+\item Bindings for Python and Lua can be easily made for this extension since LXC ships the core functions as a shared library.
+\end{itemize}
+
+\section{Conclusion}
+
+Linux Containers is an active project currently under heavy development. There is a lot of community support as container technology rises. It is a nice tool for testing and deployment since it creates a easily manangeable and easily reproduceable environment that is isolated from the host operating system.
+
+There are many features that can be included into the project and I have tried integrating one of them. The results were satisfying as it introduces a new layer of abstraction in that we can know export a read-only container as a `base image' that cannot be modified or started. We can save this container and create new containers from this `stable version' of the container.
+
+There are future development options as presented above as it is only a simple prototype that has not been tested throughly. Other features can be included into the project as well.
 
 \end{document}
