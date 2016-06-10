@@ -140,12 +140,6 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	// temporary, remove later
-	if (my_args.exportname)
-		printf("name: %s, export name: %s\n", my_args.name, my_args.exportname);
-	else if (my_args.createname)
-		printf("name: %s, create name: %s\n", my_args.name, my_args.createname);
-
 	if (ret == EXIT_FAILURE)
 		printf("Program failed\n");
 
